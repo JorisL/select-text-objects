@@ -5,7 +5,7 @@
 
 ;; Author: Joris Laurenssen <JorisL@users.noreply.github.com>
 ;; URL: https://github.com/JorisL/select-text-objects
-;; Version: 0.1.0
+;; Version: 0.1.1
 ;; Package-Requires: ((emacs "27.2"))
 ;; Keywords: convenience
 
@@ -43,18 +43,35 @@
 (require 's)
 
 
+;; Helper functions
+(defun sto--deselect-leading-trailing-whitespace ()
+  "Deselect leading and trailing whitespace from the current selection."
+  (when (> (point) (mark))
+    (exchange-point-and-mark))
+  (while (and (< (point) (mark))
+              (or (char-equal (char-after) 9)
+                  (char-equal (char-after) 10)
+                  (char-equal (char-after) 32)))
+    (right-char))
+  (exchange-point-and-mark)
+  (while (and (> (point) (mark))
+              (or (char-equal (char-before) 9)
+                  (char-equal (char-before) 10)
+                  (char-equal (char-before) 32)))
+    (left-char))
+  (exchange-point-and-mark))
+
+
+
 ;; Selecting words, lines, paragraphs, etc.
 (defun sto/select-word ()
-  "Select the current word"
+  "Put point at beginning of word and mark at end of word."
   (interactive)
-  (progn
-    (forward-word)
-    (set-mark-command nil)
-    (backward-word)))
+  (mark-word))
 
 
 (defun sto/select-line ()
-  "Select the current line from the first non-whitespace until the last character (excl. newline)"
+  "Put point at first non-whitespace character of line and mark at end of line."
   (interactive)
   (progn
     (end-of-line)
@@ -63,7 +80,7 @@
 
 
 (defun sto/select-inc-newline ()
-  "Select the current line in its entirety (incl. newline)"
+  "Put point at first character of the line and mark at first character of the next line."
   (interactive)
   (progn
     (beginning-of-line)
@@ -74,30 +91,35 @@
 
 
 (defun sto/select-sentence ()
-  "Select the current sentence."
+  "Put point at beginning of sentence and mark at end of sentence."
   (interactive)
   (progn
     (forward-sentence)
     (set-mark-command nil)
-    (backward-sentence)))
+    (backward-sentence))
+  (sto--deselect-leading-trailing-whitespace))
 
 
 (defun sto/select-paragraph ()
-  "Select the current paragraph."
+  "Put point at beginning of paragraph and mark at end of paragraph."
   (interactive)
-  (progn
-    (forward-paragraph)
-    (set-mark-command nil)
-    (backward-paragraph)))
+  (mark-paragraph)
+  (sto--deselect-leading-trailing-whitespace))
+
+
+(defun sto/select-buffer ()
+  "Put point at beginning of buffer and mark at end of buffer."
+  (interactive)
+  (mark-whole-buffer))
 
 
 ;; Selecting programming elements (function, argument, indentation, ...)
 
-;; TODO: decide what to do with leading/trailing whitespaces
 (defun sto/select-defun ()
-  "Select the whole function."
+  "Put point at beginning of function and mark at end of function."
   (interactive)
-  (mark-defun))
+  (mark-defun)
+  (sto--deselect-leading-trailing-whitespace))
 
 
 (defun sto--get-current-line-indentation ()
@@ -130,9 +152,9 @@
         (beginning-of-line)))))
 
 
-;; TODO: improve robustness, for example checking for balanced parentheses pairs, ...
+;; TODO: improve robustness, for example checking for balanced parentheses pairs, detect lisp or c-like...
 (defun sto/select-argument ()
-  "Select the current (function) argument."
+  "Put point at beginning of function argument and mark at end of function argument."
   (interactive)
   (search-backward-regexp (rx (or "," "(" "[" "{")))
   (right-char)
