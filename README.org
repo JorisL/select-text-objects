@@ -1,0 +1,53 @@
+#+TITLE: select-text-objects.el
+~select-text-objects.el~ is a small Emacs package which provides various functions to quickly select pieces of text near the point/cursor.
+
+These functions can be used to quickly select:
+- the current line
+- everything within a matching pair of brackets
+- every consequtive line with at least the current indentation level
+- everything within, and including, matching quotation marks
+- etc.
+
+This package can be used for a text-editing workflow where you first select text using on of the included functions and then perform an action using that block of text.
+This is in some sense similar to VI, where these 2 actions are taken in reverse order (e.g. in VI you first "select" the action to be performed, such as copy/paste/delete/etc., and then select the region of text to apply the action to).
+
+Actions can be taken using the standard build-in Emacs functions, but several functions also have been provided to make use of the workflow provided by this package.
+An example is the function ~sto/add-line-below-selection-or-point~, which adds a line below the current cursor position (similar to VI's ~o~ command) or below the current selection.
+This can then be used to quickly perform actions such as "adding a line at the end of the current function" (e.g. ~sto/select-function~ \to ~sto/add-line-below-selection-or-point~).
+
+It is recommended to map these functions to key combinations.
+My preference is to place them all under the ~C-v~ prefix:
+#+begin_src emacs-lisp
+(global-unset-key "\C-v")
+(defvar ctl-v-map (make-keymap)
+  "Keymap for local bindings and functions, prefixed by (^V)")
+(define-key global-map "\C-v" 'Control-V-prefix)
+(fset 'Control-V-prefix ctl-v-map)
+
+(define-key ctl-v-map "w" 'sto/select-word)
+(define-key ctl-v-map "W" 'sto/select-within-whitespace)
+(define-key ctl-v-map "l" 'sto/select-line)
+(define-key ctl-v-map "L" 'sto/select-inc-newline)
+(define-key ctl-v-map "s" 'sto/select-sentence)
+(define-key ctl-v-map "p" 'sto/select-paragraph)
+(define-key ctl-v-map "b" 'sto/select-buffer)
+(define-key ctl-v-map "f" 'sto/select-defun)
+(define-key ctl-v-map "i" 'sto/select-indent)
+(define-key ctl-v-map "a" 'sto/select-argument)
+(define-key ctl-v-map "(" 'sto/select-inner-paren)
+(define-key ctl-v-map ")" 'sto/select-outer-paren)
+(define-key ctl-v-map "[" 'sto/select-inner-bracket)
+(define-key ctl-v-map "]" 'sto/select-outer-bracket)
+(define-key ctl-v-map "{" 'sto/select-outer-brace)
+(define-key ctl-v-map "}" 'sto/select-inner-brace)
+(define-key ctl-v-map "<" 'sto/select-inner-angle-bracket)
+(define-key ctl-v-map ">" 'sto/select-outer-angle-bracket)
+(define-key ctl-v-map "'" 'sto/select-inner-string)
+(define-key ctl-v-map "\"" 'sto/select-outer-string)
+
+(define-key ctl-v-map (kbd "<left>") 'sto/move-cursor-selection-front)
+(define-key ctl-v-map (kbd "<right>") 'sto/move-cursor-selection-back)
+
+(define-key global-map "\C-o" 'sto/add-line-below-selection-or-point)
+(define-key global-map "\C-\M-o" 'sto/add-line-above-selection-or-point)
+#+end_src
