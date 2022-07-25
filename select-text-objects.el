@@ -5,7 +5,7 @@
 
 ;; Author: Joris Laurenssen <JorisL@users.noreply.github.com>
 ;; URL: https://github.com/JorisL/select-text-objects
-;; Version: 0.1.1
+;; Version: 0.1.2
 ;; Package-Requires: ((emacs "27.2"))
 ;; Keywords: convenience
 
@@ -67,7 +67,21 @@
 (defun sto/select-word ()
   "Put point at beginning of word and mark at end of word."
   (interactive)
-  (mark-word))
+  (forward-word)
+  (set-mark-command nil)
+  (backward-word))
+
+
+(defun sto/select-within-whitespace ()
+  "Put point at first non-whitespace character and mark at last non-whitespace character relative to current point."
+  (interactive)
+  (search-backward-regexp (rx (or whitespace "\n")))
+  (right-char)
+  (set-mark-command nil)
+  (search-forward-regexp (rx (or whitespace "\n")))
+  (left-char)
+  (exchange-point-and-mark)
+  )
 
 
 (defun sto/select-line ()
@@ -162,6 +176,7 @@
   (search-forward-regexp (rx (or "," ")" "]" "}")))
   (left-char)
   (exchange-point-and-mark)
+  (sto--deselect-leading-trailing-whitespace)
   )
 
 
@@ -205,7 +220,7 @@
 (defun sto/select-inner-paren ()
   "Select within the surrounding parentheses."
   (interactive)
-  (sto/mark-outer-paren)
+  (sto/select-outer-paren)
   (right-char)
   (exchange-point-and-mark)
   (left-char)
@@ -214,7 +229,7 @@
 (defun sto/select-inner-bracket ()
   "Select withing the surrounding brackets."
   (interactive)
-  (sto/mark-outer-bracket)
+  (sto/select-outer-bracket)
   (right-char)
   (exchange-point-and-mark)
   (left-char)
@@ -223,7 +238,7 @@
 (defun sto/select-inner-brace ()
   "Select within the surrounding braces."
   (interactive)
-  (sto/mark-outer-brace)
+  (sto/select-outer-brace)
   (right-char)
   (exchange-point-and-mark)
   (left-char)
@@ -232,7 +247,7 @@
 (defun sto/select-inner-angle-bracket ()
   "Select within the surrounding angle brackets."
   (interactive)
-  (sto/mark-outer-angle-bracket)
+  (sto/select-outer-angle-bracket)
   (right-char)
   (exchange-point-and-mark)
   (left-char)
@@ -289,20 +304,20 @@
 
 ;; TODO: change to use specialized commands of current major mode (e.g. org-newline)?
 (defun sto/add-line-above-selection-or-point ()
-  "Add a line on the row above the point (similar to 'o' in vi) or above the selection when active"
+  "Add a line on the row above the point (similar to 'O' in vi) or above the selection when active"
   (interactive)
   (sto/move-cursor-selection-front)
   (back-to-indentation)
-  (newline)
+  (newline 1 t)
   (previous-line)
-  (move-end-of-line))
+  (move-end-of-line nil))
 
 (defun sto/add-line-below-selection-or-point ()
   "Add a line on the row above the point (similar to 'o' in vi) or above the selection when active"
   (interactive)
   (sto/move-cursor-selection-back)
-  (move-end-of-line)
-  (newline))
+  (move-end-of-line nil)
+  (newline 1 t))
 
 
 (provide 'select-text-objects)
