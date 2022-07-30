@@ -3,7 +3,7 @@
 ;; Copyright (C) 2022--present Joris Laurenssen
 ;; MIT License
 
-;; Author: Joris Laurenssen <JorisL@users.noreply.github.com>
+;; Author: Joris Laurenssen <github.3gdc5@simplelogin.com>
 ;; URL: https://github.com/JorisL/select-text-objects
 ;; Version: 0.1.2
 ;; Package-Requires: ((emacs "27.2"))
